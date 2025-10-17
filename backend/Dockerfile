@@ -59,34 +59,35 @@ RUN mkdir -p /var/www/storage/app/public/frontend \
 RUN mkdir -p /etc/nginx/sites-enabled
 RUN cat > /etc/nginx/sites-enabled/default << 'NGINX_EOF'
 server {
-listen 8000;
-server_name _;
-root /var/www/public;
-index index.php;
+    listen 8000;
+    server_name _;
+    root /var/www/public;
+    index index.php;
 
-# Increase client body size for file uploads
-client_max_body_size 100M;
+    # Increase client body size for file uploads
+    client_max_body_size 100M;
 
-location / {
-try_files $uri $uri/ /index.php?$query_string;
-}
+    location / {
+        try_files $uri $uri/ /index.php?$query_string;
+    }
 
-location ~ \.php$ {
-fastcgi_pass 127.0.0.1:9000;
-fastcgi_index index.php;
-fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
-include fastcgi_params;
-}
+    location ~ \.php$ {
+        fastcgi_pass 127.0.0.1:9000;
+        fastcgi_index index.php;
+        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+        include fastcgi_params;
+    }
 
-# Deny access to .htaccess files
-location ~ /\.ht {
-deny all;
-}
+    # Deny access to .htaccess files
+    location ~ /\.ht {
+        deny all;
+    }
 }
 NGINX_EOF
 
 # Configure Supervisor to manage Nginx, PHP-FPM, and Reverb
-RUN cat > /etc/supervisor/conf.d/supervisord.conf << 'SUPERVISOR_EOF'
+RUN mkdir -p /etc/supervisor/conf.d
+RUN cat > /etc/supervisor/supervisord.conf << 'SUPERVISOR_EOF'
 [supervisord]
 nodaemon=true
 logfile=/var/log/supervisord.log
@@ -108,13 +109,16 @@ stdout_logfile=/var/log/nginx.log
 stderr_logfile=/var/log/nginx-error.log
 
 [program:reverb]
-command=/usr/local/bin/php /var/www/artisan reverb:start --host=0.0.0.0 --port=8080
+command=/usr/local/bin/php /var/www/artisan reverb:start --host=0.0.0.0 --port=8080 || true
 user=www-data
-autostart=true
+autostart=false
 autorestart=true
 priority=997
 stdout_logfile=/var/log/reverb.log
 stderr_logfile=/var/log/reverb-error.log
+
+[include]
+files = /etc/supervisor/conf.d/*.conf
 SUPERVISOR_EOF
 
 # Expose ports 8000 (Laravel) and 8080 (Reverb)

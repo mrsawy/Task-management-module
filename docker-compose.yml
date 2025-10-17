@@ -145,7 +145,7 @@ services:
         php artisan storage:link &&
         php artisan config:clear &&
         php artisan migrate --force &&
-        /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf
+        /usr/bin/supervisord -c /etc/supervisor/supervisord.conf
       "
 
 networks:
