@@ -56,7 +56,7 @@ RUN mkdir -p /var/www/storage/app/public/frontend \
 
 # Configure Nginx
 RUN mkdir -p /etc/nginx/sites-enabled
-COPY <<EOF /etc/nginx/sites-enabled/default
+RUN cat > /etc/nginx/sites-enabled/default << 'NGINX_EOF'
 server {
     listen 8000;
     server_name _;
@@ -67,13 +67,13 @@ server {
     client_max_body_size 100M;
 
     location / {
-        try_files \$uri \$uri/ /index.php?\$query_string;
+        try_files $uri $uri/ /index.php?$query_string;
     }
 
-    location ~ \.php\$ {
+    location ~ \.php$ {
         fastcgi_pass 127.0.0.1:9000;
         fastcgi_index index.php;
-        fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
+        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
         include fastcgi_params;
     }
 
@@ -82,10 +82,10 @@ server {
         deny all;
     }
 }
-EOF
+NGINX_EOF
 
 # Configure Supervisor to manage Nginx, PHP-FPM, and Reverb
-COPY <<EOF /etc/supervisor/conf.d/supervisord.conf
+RUN cat > /etc/supervisor/conf.d/supervisord.conf << 'SUPERVISOR_EOF'
 [supervisord]
 nodaemon=true
 logfile=/var/log/supervisord.log
@@ -114,7 +114,7 @@ autorestart=true
 priority=997
 stdout_logfile=/var/log/reverb.log
 stderr_logfile=/var/log/reverb-error.log
-EOF
+SUPERVISOR_EOF
 
 # Expose ports 8000 (Laravel) and 8080 (Reverb)
 EXPOSE 8000 8080
