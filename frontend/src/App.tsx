@@ -6,27 +6,26 @@ import Auth from './pages/Auth';
 import MyTasks from './pages/MyTasks';
 import CreatedTasks from './pages/CreatedTasks';
 import { useMeQuery } from './services/authApi';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { type RootState } from '@/store/store';
 import { ThemeProvider } from './components/molecules/ThemeProvider';
 import Loading from './components/molecules/Loading';
+import { setGeneralIsLoading } from './store/generalSlice';
+import { useEffect } from 'react';
 
 const App = () => {
 
-  const token = useSelector((state: RootState) => state.auth.token);
+  const { auth } = useSelector((state: RootState) => state);
+  const dispatch = useDispatch()
   const { isSuccess, isLoading } = useMeQuery(undefined, {
-    skip: !token,
+    skip: !auth.token,
   });
 
-  if (token && isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900" />
-      </div>
-    );
-  }
+  useEffect(() => {
+      dispatch(setGeneralIsLoading(isLoading))
+  }, [isLoading])
 
-  const isAuthenticated = token && isSuccess;
+  const isAuthenticated = auth.token && isSuccess;
 
   return (
     <TooltipProvider>

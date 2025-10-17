@@ -84,7 +84,7 @@ server {
 }
 EOF
 
-# Configure Supervisor to manage both Nginx and PHP-FPM
+# Configure Supervisor to manage Nginx, PHP-FPM, and Reverb
 COPY <<EOF /etc/supervisor/conf.d/supervisord.conf
 [supervisord]
 nodaemon=true
@@ -105,7 +105,16 @@ autorestart=true
 priority=998
 stdout_logfile=/var/log/nginx.log
 stderr_logfile=/var/log/nginx-error.log
+
+[program:reverb]
+command=/usr/local/bin/php /var/www/artisan reverb:start --host=0.0.0.0 --port=8080
+user=www-data
+autostart=true
+autorestart=true
+priority=997
+stdout_logfile=/var/log/reverb.log
+stderr_logfile=/var/log/reverb-error.log
 EOF
 
-# Expose port 8000
-EXPOSE 8000
+# Expose ports 8000 (Laravel) and 8080 (Reverb)
+EXPOSE 8000 8080

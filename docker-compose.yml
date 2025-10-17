@@ -54,12 +54,85 @@ services:
       - frontend_dist:/var/www/storage/app/public/frontend/
     ports:
       - "8000:8000"
+      - "8080:8080"
     environment:
+      # === Laravel App Config ===
+      APP_NAME: Laravel
+      APP_ENV: local
+      APP_KEY: base64:2SYq5uV3qASe+Xf9fU9nQHK7q7PeJyIrV67ielXpE14=
+      APP_DEBUG: 'true'
+      APP_URL: http://localhost
+      APP_LOCALE: en
+      APP_FALLBACK_LOCALE: en
+      APP_FAKER_LOCALE: en_US
+      APP_MAINTENANCE_DRIVER: file
+      PHP_CLI_SERVER_WORKERS: 4
+
+      # === Encryption & Security ===
+      BCRYPT_ROUNDS: 12
+      JWT_SECRET: 7SaXlcRtRA1GfbZEoQ9SxRJ8u8mPi8Y5ffrFwXGhmR358gFWyurHqcrPez3oPsNL
+
+      # === Logging ===
+      LOG_CHANNEL: stack
+      LOG_STACK: single
+      LOG_DEPRECATIONS_CHANNEL: null
+      LOG_LEVEL: debug
+
+      # === Database ===
+      DB_CONNECTION: mysql
       DB_HOST: mysql
       DB_PORT: 3306
       DB_DATABASE: laravel
       DB_USERNAME: laravel
       DB_PASSWORD: root
+      DB_CHARSET: utf8mb4
+      DB_COLLATION: utf8mb4_unicode_ci
+
+      # === Session & Cache ===
+      SESSION_DRIVER: file
+      SESSION_LIFETIME: 120
+      SESSION_ENCRYPT: 'false'
+      SESSION_PATH: /
+      SESSION_DOMAIN: null
+      CACHE_STORE: database
+      QUEUE_CONNECTION: sync
+      FILESYSTEM_DISK: local
+
+      # === Redis ===
+      REDIS_CLIENT: phpredis
+      REDIS_HOST: 127.0.0.1
+      REDIS_PASSWORD: null
+      REDIS_PORT: 6379
+
+      # === Mail ===
+      MAIL_MAILER: log
+      MAIL_HOST: 127.0.0.1
+      MAIL_PORT: 2525
+      MAIL_USERNAME: null
+      MAIL_PASSWORD: null
+      MAIL_FROM_ADDRESS: hello@example.com
+      MAIL_FROM_NAME: Laravel
+
+      # === Reverb (WebSockets) ===
+      BROADCAST_DRIVER: reverb
+      BROADCAST_CONNECTION: reverb
+      REVERB_APP_ID: 836457
+      REVERB_APP_KEY: rklh3edznh4dvz6b8vfm
+      REVERB_APP_SECRET: bhnzw05yv4s34ctougsz
+      REVERB_HOST: 0.0.0.0
+      REVERB_PORT: 8080
+      REVERB_SCHEME: http
+
+      # === Vite Environment Variables ===
+      VITE_REVERB_APP_KEY: rklh3edznh4dvz6b8vfm
+      VITE_REVERB_HOST: 0.0.0.0
+      VITE_REVERB_PORT: 8080
+      VITE_REVERB_SCHEME: http
+      VITE_APP_NAME: Laravel
+
+      # === CORS ===
+      CORS_ALLOWED_ORIGINS: http://localhost:5173
+
     depends_on:
       mysql:
         condition: service_healthy

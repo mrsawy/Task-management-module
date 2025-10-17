@@ -99,7 +99,7 @@ class TaskController extends BaseController
 
         $task->load(['creator:id,name,email', 'assignee:id,name,email']);
 
-        event(new Tasks($assignee->id, "New Task Created"));
+        // //event(new Tasks($assignee->id, "New Task Created"));
         TaskAssigned::dispatch($task);
 
         return response()->json([
@@ -158,7 +158,7 @@ class TaskController extends BaseController
         $task->load(['creator:id,name,email', 'assignee:id,name,email']);
 
 
-        event(new Tasks($task->assignee_id, "Task Updated . "));
+        //event(new Tasks($task->assignee_id, "Task Updated . "));
 
         return response()->json([
             'success' => true,
@@ -196,7 +196,7 @@ class TaskController extends BaseController
         $creatorId = $task->creator_id;
 
 
-        event(new Tasks($task->assignee_id, "Task deleted . "));
+        //event(new Tasks($task->assignee_id, "Task deleted . "));
         $task->delete();
 
         return response()->json([
@@ -263,7 +263,7 @@ class TaskController extends BaseController
 
         $task->load(['creator:id,name,email', 'assignee:id,name,email']);
 
-        event(new Tasks($task->assignee_id, "You have a new Task . "));
+        //event(new Tasks($task->assignee_id, "You have a new Task . "));
         TaskAssigned::dispatch($task);
 
         return response()->json([

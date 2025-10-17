@@ -82,6 +82,7 @@ export default function TaskForm({ open, onOpenChange, task, onSuccess }: TaskFo
           ...data,
           is_completed: is_completed || false,
         }).unwrap();
+        toast.success('Task Updated successfully');
       } else {
         await createTask({
           ...data
