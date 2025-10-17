@@ -1,0 +1,1 @@
+export const VITE_API_URL = "https://task-management-module.hadefah.com/api"

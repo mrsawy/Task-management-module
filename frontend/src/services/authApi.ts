@@ -1,3 +1,4 @@
+import { VITE_API_URL } from '@/lib/constants';
 import type { AuthResponse, LoginRequest, SignupRequest, User } from '@/lib/types/auth.interface';
 import type { RootState } from '@/store/store';
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
@@ -7,7 +8,7 @@ import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 export const authApi = createApi({
   reducerPath: 'authApi',
   baseQuery: fetchBaseQuery({
-    baseUrl: `${import.meta.env.VITE_API_URL || 'http://localhost:8000/api'}/auth`,
+    baseUrl: `${import.meta.env.VITE_API_URL || VITE_API_URL}/auth`,
     prepareHeaders: (headers, { getState }) => {
       const token = (getState() as RootState).auth.token;
       if (token) {

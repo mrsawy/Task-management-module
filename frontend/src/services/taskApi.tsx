@@ -1,3 +1,4 @@
+import { VITE_API_URL } from '@/lib/constants';
 import type { CreateTaskRequest, Task, UpdateTaskRequest } from '@/lib/types/task.interface';
 import type { RootState } from '@/store/store';
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
@@ -8,7 +9,7 @@ import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 export const taskApi = createApi({
     reducerPath: 'taskApi',
     baseQuery: fetchBaseQuery({
-        baseUrl: `${import.meta.env.VITE_API_URL || 'http://localhost:8000/api'}/tasks`,
+        baseUrl: `${import.meta.env.VITE_API_URL || VITE_API_URL}/tasks`,
         prepareHeaders: (headers, { getState }) => {
             const token = (getState() as RootState).auth.token;
             if (token) {
