@@ -49,7 +49,7 @@ services:
     restart: unless-stopped
     working_dir: /var/www
     volumes:
-      - ./backend:/var/www
+      # - ./backend:/var/www
       # Mount frontend build to a SUBFOLDER in public (not replacing public/)
       - frontend_dist:/var/www/storage/app/public/frontend/
     ports:
