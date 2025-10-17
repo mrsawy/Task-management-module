@@ -13,7 +13,7 @@ A full-stack task management system built with Laravel and React, featuring real
 *Modern dark theme with card-based task layout and filtering options*
 
 ### Light Mode
-![Task Manager - Light Mode](https://drive.google.com/uc?export=view&id=1SCUHGVLeU9PrMIyGSnioOmmwYJJtNHoi)
+![Task Manager - Light Mode](https://drive.google.com/uc?export=view&id=1kOmCF3vm6NSdbWU-ixwbYAQKJ4BSTo9E)
 *Clean light theme with full task management capabilities*
 
 ## 📋 Features
