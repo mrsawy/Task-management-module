@@ -1,0 +1,86 @@
+version: '3.8'
+
+services:
+  # MySQL Database
+  mysql:
+    image: mysql:8.0
+    container_name: task_mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: laravel
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_USER: laravel
+      MYSQL_PASSWORD: root
+    volumes:
+      - mysql_data:/var/lib/mysql
+    ports:
+      - "3306:3306"
+    networks:
+      - task_network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+
+  # React Vite Frontend
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: task_frontend
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+      # Share the built frontend dist folder
+      - frontend_dist:/app/dist
+    ports:
+      - "5173:5173"
+    environment:
+      - VITE_API_URL=http://localhost:8000
+    networks:
+      - task_network
+
+  # Laravel Backend
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: task_backend
+    restart: unless-stopped
+    working_dir: /var/www
+    volumes:
+      - ./backend:/var/www
+      # Mount frontend build to a SUBFOLDER in public (not replacing public/)
+      - frontend_dist:/var/www/storage/app/public/frontend/
+    ports:
+      - "8000:8000"
+    environment:
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_DATABASE: laravel
+      DB_USERNAME: laravel
+      DB_PASSWORD: root
+    depends_on:
+      mysql:
+        condition: service_healthy
+      frontend:
+        condition: service_started
+    networks:
+      - task_network
+    command: >
+      sh -c "
+        php artisan storage:link &&
+        php artisan config:clear &&
+        php artisan migrate --force &&
+        /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf
+      "
+
+networks:
+  task_network:
+    driver: bridge
+
+volumes:
+  mysql_data:
+    driver: local
+  frontend_dist:
+    driver: local
