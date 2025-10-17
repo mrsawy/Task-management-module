@@ -30,15 +30,16 @@ WORKDIR /var/www
 # Copy backend code
 COPY . /var/www
 
+# Copy .env first
+COPY .env /var/www
+# Generate Laravel key if not exists
+RUN if [ ! -f .env ]; then cp .env.example .env; fi
+
 # Copy permissions
 RUN chown -R www-data:www-data /var/www
 
 # Install PHP dependencies
 RUN composer install --no-dev --optimize-autoloader --no-interaction
-
-COPY .env /var/www
-# Generate Laravel key if not exists
-RUN if [ ! -f .env ]; then cp .env.example .env; fi
 
 RUN php artisan key:generate || true
 
@@ -58,29 +59,29 @@ RUN mkdir -p /var/www/storage/app/public/frontend \
 RUN mkdir -p /etc/nginx/sites-enabled
 RUN cat > /etc/nginx/sites-enabled/default << 'NGINX_EOF'
 server {
-    listen 8000;
-    server_name _;
-    root /var/www/public;
-    index index.php;
+listen 8000;
+server_name _;
+root /var/www/public;
+index index.php;
 
-    # Increase client body size for file uploads
-    client_max_body_size 100M;
+# Increase client body size for file uploads
+client_max_body_size 100M;
 
-    location / {
-        try_files $uri $uri/ /index.php?$query_string;
-    }
+location / {
+try_files $uri $uri/ /index.php?$query_string;
+}
 
-    location ~ \.php$ {
-        fastcgi_pass 127.0.0.1:9000;
-        fastcgi_index index.php;
-        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
-        include fastcgi_params;
-    }
+location ~ \.php$ {
+fastcgi_pass 127.0.0.1:9000;
+fastcgi_index index.php;
+fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+include fastcgi_params;
+}
 
-    # Deny access to .htaccess files
-    location ~ /\.ht {
-        deny all;
-    }
+# Deny access to .htaccess files
+location ~ /\.ht {
+deny all;
+}
 }
 NGINX_EOF
 
