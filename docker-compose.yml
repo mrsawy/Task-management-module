@@ -36,7 +36,12 @@ services:
     ports:
       - "5173:5173"
     environment:
-      - VITE_API_URL=https://task-management-module.hadefah.com/api
+      - VITE_API_URL=${VITE_API_URL:-http://localhost:8000}/api
+      - VITE_REVERB_ENABLED=${VITE_REVERB_ENABLED:-false}
+      - VITE_REVERB_APP_KEY=${VITE_REVERB_APP_KEY:-rklh3edznh4dvz6b8vfm}
+      - VITE_REVERB_HOST=${VITE_REVERB_HOST:-localhost}
+      - VITE_REVERB_PORT=${VITE_REVERB_PORT:-8080}
+      - VITE_REVERB_SCHEME=${VITE_REVERB_SCHEME:-http}
     networks:
       - task_network
 
@@ -79,12 +84,12 @@ services:
       LOG_LEVEL: debug
 
       # === Database ===
-      DB_CONNECTION: mysql
-      DB_HOST: mysql
-      DB_PORT: 3306
-      DB_DATABASE: laravel
-      DB_USERNAME: laravel
-      DB_PASSWORD: root
+      DB_CONNECTION: ${DB_CONNECTION:-mysql}
+      DB_HOST: ${DB_HOST:-mysql}
+      DB_PORT: ${DB_PORT:-3306}
+      DB_DATABASE: ${DB_DATABASE:-laravel}
+      DB_USERNAME: ${DB_USERNAME:-laravel}
+      DB_PASSWORD: ${DB_PASSWORD:-root}
       DB_CHARSET: utf8mb4
       DB_COLLATION: utf8mb4_unicode_ci
 
@@ -114,24 +119,24 @@ services:
       MAIL_FROM_NAME: Laravel
 
       # === Reverb (WebSockets) ===
-      BROADCAST_DRIVER: reverb
-      BROADCAST_CONNECTION: reverb
-      REVERB_APP_ID: 836457
-      REVERB_APP_KEY: rklh3edznh4dvz6b8vfm
-      REVERB_APP_SECRET: bhnzw05yv4s34ctougsz
-      REVERB_HOST: 0.0.0.0
-      REVERB_PORT: 8080
-      REVERB_SCHEME: http
+      BROADCAST_DRIVER: ${BROADCAST_DRIVER:-reverb}
+      BROADCAST_CONNECTION: ${BROADCAST_CONNECTION:-reverb}
+      REVERB_APP_ID: ${REVERB_APP_ID:-836457}
+      REVERB_APP_KEY: ${REVERB_APP_KEY:-rklh3edznh4dvz6b8vfm}
+      REVERB_APP_SECRET: ${REVERB_APP_SECRET:-bhnzw05yv4s34ctougsz}
+      REVERB_HOST: ${REVERB_HOST:-0.0.0.0}
+      REVERB_PORT: ${REVERB_PORT:-8080}
+      REVERB_SCHEME: ${REVERB_SCHEME:-http}
 
       # === Vite Environment Variables ===
-      VITE_REVERB_APP_KEY: rklh3edznh4dvz6b8vfm
-      VITE_REVERB_HOST: 0.0.0.0
-      VITE_REVERB_PORT: 8080
-      VITE_REVERB_SCHEME: http
-      VITE_APP_NAME: Laravel
+      VITE_REVERB_APP_KEY: ${VITE_REVERB_APP_KEY:-rklh3edznh4dvz6b8vfm}
+      VITE_REVERB_HOST: ${VITE_REVERB_HOST:-0.0.0.0}
+      VITE_REVERB_PORT: ${VITE_REVERB_PORT:-8080}
+      VITE_REVERB_SCHEME: ${VITE_REVERB_SCHEME:-http}
+      VITE_APP_NAME: ${VITE_APP_NAME:-Laravel}
 
       # === CORS ===
-      CORS_ALLOWED_ORIGINS: http://localhost:5173
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:5173}
 
     depends_on:
       mysql:
@@ -144,7 +149,9 @@ services:
       sh -c "
         php artisan storage:link &&
         php artisan config:clear &&
+        php artisan cache:clear &&
         php artisan migrate --force &&
+        php artisan db:seed --force || true &&
         /usr/bin/supervisord -c /etc/supervisor/supervisord.conf
       "
 

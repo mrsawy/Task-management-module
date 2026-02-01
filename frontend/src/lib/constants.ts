@@ -1,1 +1,1 @@
-export const VITE_API_URL = "https://task-management-module.hadefah.com/api"
+export const VITE_API_URL = "http://127.0.0.1:8000"

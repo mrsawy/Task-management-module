@@ -43,7 +43,24 @@ export const authApi = createApi({
       invalidatesTags: ['User']
     }),
     me: builder.query<User, void>({
-      query: () => '/me',
+      queryFn: async (_, _queryApi) => {
+        const baseUrl = `${import.meta.env.VITE_API_URL || VITE_API_URL}`;
+        const token = (_queryApi.getState() as RootState).auth.token;
+
+        const result = await fetch(`${baseUrl}/users/me`, {
+          headers: {
+            'Authorization': token ? `Bearer ${token}` : '',
+            'Content-Type': 'application/json',
+          },
+        });
+
+        if (!result.ok) {
+          return { error: { status: result.status, data: await result.json() } };
+        }
+
+        const data = await result.json();
+        return { data };
+      },
       providesTags: ['User'],
     }),
     refresh: builder.mutation<AuthResponse, void>({

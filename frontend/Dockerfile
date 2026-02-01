@@ -21,4 +21,4 @@ COPY --chown=node:node components.json eslint.config.js ./
 COPY --chown=node:node *.d.ts ./
 
 # Build the application
-RUN npm run build
+RUN pnpm run build

@@ -40,13 +40,23 @@ export function useTaskUpdates() {
     const { data: user } = useMeQuery()
     useEffect(() => {
         if (!user) return
+
+        // Check if Reverb is enabled (optional env variable)
+        // Default to disabled to prevent connection attempts
+        const reverbEnabled = import.meta.env.VITE_REVERB_ENABLED === 'true';
+        if (!reverbEnabled) {
+            console.log('Reverb is disabled. Real-time updates will not be available.');
+            setStatus('Disabled');
+            return;
+        }
+
         // Initialize Laravel Echo with Reverb
         const initEcho = async () => {
             try {
                 // Set Pusher on window object
                 window.Pusher = Pusher;
 
-                // Create Echo instance
+                // Create Echo instance with error handling
                 echoRef.current = new Echo({
                     broadcaster: 'reverb',
                     key: import.meta.env.VITE_REVERB_APP_KEY,
@@ -56,6 +66,9 @@ export function useTaskUpdates() {
                     forceTLS: false, // Set to false for local development
                     enabledTransports: ['ws'], // Only use 'ws' for local, not 'wss'
                     disableStats: true,
+                    // Add connection timeout
+                    activityTimeout: 30000,
+                    pongTimeout: 6000,
                 });
 
                 // Listen to connection state
@@ -79,6 +92,31 @@ export function useTaskUpdates() {
 
                 echoRef.current.connector.pusher.connection.bind('connecting', () => {
                     setStatus('Connecting...');
+                });
+
+                // Handle connection errors gracefully
+                echoRef.current.connector.pusher.connection.bind('error', (error: any) => {
+                    console.warn('Pusher connection error (non-critical):', error);
+                    setIsConnected(false);
+                    setStatus('Connection Failed');
+                    // Don't show error to user - just log it
+                    // The app will continue to work without real-time updates
+                });
+
+                // Handle failed connection attempts
+                echoRef.current.connector.pusher.connection.bind('failed', () => {
+                    console.warn('Pusher connection failed. Real-time updates unavailable.');
+                    setIsConnected(false);
+                    setStatus('Connection Failed');
+                });
+
+                // Handle state changes
+                echoRef.current.connector.pusher.connection.bind('state_change', (states: any) => {
+                    if (states.current === 'failed' || states.current === 'unavailable') {
+                        console.warn('Pusher connection unavailable. App will continue without real-time updates.');
+                        setIsConnected(false);
+                        setStatus('Unavailable');
+                    }
                 });
 
                 // Subscribe to a channel - replace 'test-channel' with your channel
@@ -108,17 +146,18 @@ export function useTaskUpdates() {
                     console.log('✅ Successfully subscribed to the channel');
                 });
 
+                // Handle subscription errors gracefully
+                channel.subscription.bind('pusher:subscription_error', (error: any) => {
+                    console.warn('Channel subscription error (non-critical):', error);
+                    // Don't throw - just log the error
+                });
+
             } catch (error) {
-                console.error('Echo initialization error:', error);
-                setStatus('Connection Error');
-                setMessages(prev => [
-                    ...prev,
-                    {
-                        type: 'error',
-                        text: `Error: ${error instanceof Error ? error.message : 'Unknown error'}`,
-                        time: new Date().toLocaleTimeString()
-                    }
-                ]);
+                // Silently handle connection errors - don't break the app
+                console.warn('Echo initialization failed (non-critical). Real-time updates will not be available:', error);
+                setStatus('Unavailable');
+                setIsConnected(false);
+                // Don't add error message to UI - app continues to work
             }
         };
 

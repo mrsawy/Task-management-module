@@ -2,11 +2,11 @@ import { Card, CardContent } from '@/components/atoms/card';
 import { Button } from '@/components/atoms/button';
 import { Badge } from '@/components/atoms/badge';
 import { Checkbox } from '@/components/atoms/checkbox';
-import {  DropdownMenu,  DropdownMenuContent,  DropdownMenuItem,  DropdownMenuTrigger,} from '@/components/atoms/dropdown-menu';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, } from '@/components/atoms/dropdown-menu';
 import { MoreHorizontal, Edit, Trash2, User, Calendar, Flag, CheckCircle2, Circle, OctagonAlert, Loader2, Eye, UserPlus } from 'lucide-react';
 import { toast } from 'sonner';
 import { useDeleteTaskMutation, useToggleCompleteMutation } from '@/services/taskApi';
-import { getPriorityColor, getStatusColor, getStatusLabel, getTaskStatus } from '@/lib/utils/statusComputer';
+import { getPriorityColor, getWorkflowStatusColor, getWorkflowStatusLabel } from '@/lib/utils/statusComputer';
 import { formatDate, getRelativeTime } from '@/lib/utils/dateUtils';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/atoms/alert-dialog';
 import type { Task } from '@/lib/types/task.interface';
@@ -24,13 +24,11 @@ export default function TaskCard({ task, onEdit }: TaskCardProps) {
   const [open, setOpen] = useState<boolean>(false);
   const [viewOpen, setViewOpen] = useState<boolean>(false);
   const [reassignOpen, setReassignOpen] = useState<boolean>(false);
-  const [isCompleted, setIsCompleted] = useState<boolean>(!!task.is_completed);
+  const [taskStatus, setTaskStatus] = useState<'to-do' | 'in-progress' | 'review' | 'done'>(task.status || 'to-do');
   const [toggleComplete] = useToggleCompleteMutation();
   const [deleteTask, { isLoading }] = useDeleteTaskMutation();
   const { data: user } = useMeQuery();
 
-  const status = getTaskStatus({ ...task, is_completed: isCompleted });
-  const statusColor = getStatusColor(status);
   const priorityColor = getPriorityColor(task.priority);
 
   // Permission checks
@@ -45,12 +43,13 @@ export default function TaskCard({ task, onEdit }: TaskCardProps) {
     }
 
     try {
-      setIsCompleted(p => !p);
+      const newStatus = taskStatus === 'done' ? 'to-do' : 'done';
+      setTaskStatus(newStatus);
       await toggleComplete(task.id).unwrap();
-      toast.success(task.is_completed ? 'Task marked as incomplete' : 'Task completed!');
+      toast.success(newStatus === 'done' ? 'Task completed!' : 'Task marked as incomplete');
     } catch (error) {
       console.error({ error });
-      setIsCompleted(p => !p);
+      setTaskStatus(task.status || 'to-do'); // Revert on error
       toast.error('Failed to update task');
     }
   };
@@ -84,13 +83,13 @@ export default function TaskCard({ task, onEdit }: TaskCardProps) {
               <Checkbox
                 id={`toggle-${task.id}`}
                 onCheckedChange={handleToggleComplete}
-                checked={isCompleted}
+                checked={taskStatus === 'done'}
                 disabled={!isAssignee}
                 className="data-[state=checked]:border-blue-600 data-[state=checked]:bg-blue-600 data-[state=checked]:text-white dark:data-[state=checked]:border-blue-700 dark:data-[state=checked]:bg-blue-700"
                 onClick={(e) => e.stopPropagation()}
               />
               <div className="flex-1 min-w-0">
-                <h3 className={`font-medium text-sm leading-5 ${isCompleted ? 'line-through text-muted-foreground' : 'text-foreground'}`}>
+                <h3 className={`font-medium text-sm leading-5 ${taskStatus === 'done' ? 'line-through text-muted-foreground' : 'text-foreground'}`}>
                   {task.title}
                 </h3>
                 {task.description && (
@@ -109,24 +108,20 @@ export default function TaskCard({ task, onEdit }: TaskCardProps) {
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-32 flex flex-col gap-1 p-2 text-sm">
                 {/* View button - only for assignees */}
-                {isAssignee && (
-                  <Button variant="outline" className="border-0 w-full px-0 justify-start ps-1">
-                    <DropdownMenuItem onClick={() => setViewOpen(true)} className='cursor-pointer text-xs'>
-                      <Eye className="mr-2 h-4 w-4 text-blue-500" />
-                      View
-                    </DropdownMenuItem>
-                  </Button>
-                )}
+                <Button variant="outline" className="border-0 w-full px-0 justify-start ps-1">
+                  <DropdownMenuItem onClick={() => setViewOpen(true)} className='cursor-pointer text-xs'>
+                    <Eye className="mr-2 h-4 w-4 text-blue-500" />
+                    View
+                  </DropdownMenuItem>
+                </Button>
 
                 {/* Edit button - only for assignees */}
-                {isAssignee && (
-                  <Button variant="outline" className="border-0 w-full px-0 justify-start ps-1 r">
-                    <DropdownMenuItem className='cursor-pointer text-xs' onClick={() => onEdit?.(task)}>
-                      <Edit className="mr-2 h-4 w-4 text-green-500" />
-                      Edit
-                    </DropdownMenuItem>
-                  </Button>
-                )}
+                <Button variant="outline" className="border-0 w-full px-0 justify-start ps-1 r">
+                  <DropdownMenuItem className='cursor-pointer text-xs' onClick={() => onEdit?.(task)}>
+                    <Edit className="mr-2 h-4 w-4 text-green-500" />
+                    Edit
+                  </DropdownMenuItem>
+                </Button>
 
                 {/* Reassign button - only for creators who are not assignees */}
                 {isCreator && (
@@ -154,13 +149,13 @@ export default function TaskCard({ task, onEdit }: TaskCardProps) {
           </div>
 
           <div className="flex flex-wrap gap-2 mb-3">
-            <Badge variant="outline" className={`text-xs ${statusColor}`}>
-              {task.is_completed ? (
+            <Badge variant="outline" className={`text-xs ${getWorkflowStatusColor(task.status)}`}>
+              {task.status === 'done' ? (
                 <CheckCircle2 className="mr-1 h-3 w-3" />
               ) : (
                 <Circle className="mr-1 h-3 w-3" />
               )}
-              {getStatusLabel(status)}
+              {getWorkflowStatusLabel(task.status)}
             </Badge>
 
             <Badge variant="outline" className={`text-xs ${priorityColor}`}>
@@ -214,6 +209,7 @@ export default function TaskCard({ task, onEdit }: TaskCardProps) {
         open={viewOpen}
         onOpenChange={setViewOpen}
         task={task}
+        onEdit={onEdit}
       />
 
       {/* Task Reassign Modal */}

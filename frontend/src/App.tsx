@@ -5,6 +5,8 @@ import DashboardLayout from './components/molecules/DashboardLayout';
 import Auth from './pages/Auth';
 import MyTasks from './pages/MyTasks';
 import CreatedTasks from './pages/CreatedTasks';
+import Users from './pages/Users';
+import TasksKanbanPage from './pages/TasksKanban';
 import { useMeQuery } from './services/authApi';
 import { useDispatch, useSelector } from 'react-redux';
 import { type RootState } from '@/store/store';
@@ -41,7 +43,9 @@ const App = () => {
             />
             <Route element={<DashboardLayout />}>
               <Route path="dashboard/my-tasks" element={<MyTasks />} />
+              <Route path="dashboard/tasks-kanban" element={<TasksKanbanPage />} />
               <Route path="dashboard/created-tasks" element={<CreatedTasks />} />
+              <Route path="dashboard/users" element={<Users />} />
             </Route>
             <Route
               path="/"

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\CheckPermission;
 use App\Http\Middleware\SanitizeInput;
 use App\Http\Middleware\SecurityMiddleware;
 use Illuminate\Foundation\Application;
@@ -15,5 +16,8 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->api(prepend: [SecurityMiddleware::class]);
         $middleware->api(prepend: [SanitizeInput::class]);
+        $middleware->alias([
+            'permission' => CheckPermission::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {})->create();

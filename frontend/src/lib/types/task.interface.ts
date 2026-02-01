@@ -6,7 +6,8 @@ export interface Task {
     description?: string;
     due_date: string;
     priority: 'low' | 'medium' | 'high';
-    is_completed: boolean;
+    status: 'to-do' | 'in-progress' | 'review' | 'done';
+    is_completed?: boolean; // Computed from status === 'done' for backward compatibility
     created_at: string;
     updated_at: string;
     creator?: {
@@ -19,6 +20,8 @@ export interface Task {
         name: string;
         email: string;
     };
+    dependencies?: Task[];
+    dependents?: Task[];
 }
 
 export interface CreateTaskRequest {
@@ -26,7 +29,10 @@ export interface CreateTaskRequest {
     description?: string;
     due_date: string;
     priority: 'low' | 'medium' | 'high';
-    assignee_email: string;
+    status?: 'to-do' | 'in-progress' | 'review' | 'done';
+    assignee_id: number;
+    dependency_ids?: number[];
+    dependent_ids?: number[];
 }
 
 export interface UpdateTaskRequest {
@@ -35,5 +41,8 @@ export interface UpdateTaskRequest {
     description?: string;
     due_date?: string;
     priority?: 'low' | 'medium' | 'high';
-    is_completed: boolean
+    status?: 'to-do' | 'in-progress' | 'review' | 'done';
+    is_completed?: boolean;
+    dependency_ids?: number[];
+    dependent_ids?: number[];
 }

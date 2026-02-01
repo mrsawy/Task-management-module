@@ -5,7 +5,10 @@ export const taskSchema = z.object({
   description: z.string().optional(),
   due_date: z.string().min(1, 'Due date is required'),
   priority: z.enum(['low', 'medium', 'high']),
-  assignee_email: z.email('Invalid email address')
+  status: z.enum(['to-do', 'in-progress', 'review', 'done']).optional(),
+  assignee_id: z.number().min(1, 'Please select an assignee'),
+  dependency_ids: z.array(z.number()).optional(),
+  dependent_ids: z.array(z.number()).optional()
 });
 
 export type TaskFormData = z.infer<typeof taskSchema>;

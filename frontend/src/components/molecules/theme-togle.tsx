@@ -6,6 +6,7 @@ import { MoonIcon, SunIcon } from "lucide-react";
 
 import { useEffect, useState } from "react";
 import { useTheme } from "./ThemeProvider";
+import { AnimatedThemeToggler } from "../atoms/animated-theme-toggler";
 
 const ThemeToggleButton = ({ className }: { className?: string }) => {
   const [mounted, setMounted] = useState(false);
@@ -26,9 +27,8 @@ const ThemeToggleButton = ({ className }: { className?: string }) => {
   }
 
   return (
-    <Button size="icon" className={cn("rounded-full", className)} onClick={toggleTheme}>
-      {theme === "dark" ? <SunIcon /> : <MoonIcon />}
-    </Button>
+    <AnimatedThemeToggler className={cn("cursor-pointer border rounded p-1 bg-primary text-white")} />
+
   );
 };
 

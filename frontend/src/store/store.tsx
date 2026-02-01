@@ -4,6 +4,7 @@ import authReducer from './authSlice';
 import generalSlice from './generalSlice';
 import { authApi } from '@/services/authApi';
 import { taskApi } from '@/services/taskApi';
+import { userApi } from '@/services/userApi';
 
 export const store = configureStore({
   reducer: {
@@ -11,11 +12,13 @@ export const store = configureStore({
     general:generalSlice,
     [authApi.reducerPath]: authApi.reducer,
     [taskApi.reducerPath]: taskApi.reducer,
+    [userApi.reducerPath]: userApi.reducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware().concat(
       authApi.middleware,
-      taskApi.middleware
+      taskApi.middleware,
+      userApi.middleware
     ),
 });
 

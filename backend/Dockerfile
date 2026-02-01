@@ -28,7 +28,23 @@ RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local
 WORKDIR /var/www
 
 # Copy backend code
+# Copy composer files first for better caching
+COPY composer.json composer.lock /var/www/
+
+# Install PHP dependencies first (cached layer)
+RUN composer install --no-dev --optimize-autoloader --no-interaction --no-scripts
+
+# Copy application code (excluding .dockerignore files)
 COPY . /var/www
+
+# Handle .env file
+RUN if [ ! -f .env ]; then cp .env.example .env; fi
+
+# Set permissions before running artisan commands
+RUN chown -R www-data:www-data /var/www
+
+# Now run artisan commands
+RUN php artisan key:generate || true
 
 # Copy .env first
 COPY .env /var/www

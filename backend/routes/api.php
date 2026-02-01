@@ -1,13 +1,9 @@
 <?php
 
 use App\Http\Controllers\AuthController;
-use App\Http\Controllers\ERPTaskController;
-use App\Http\Controllers\HRTaskController;
-use App\Http\Controllers\LMSTaskController;
 use App\Http\Controllers\TaskController;
+use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
-
-use App\Http\Controllers\BroadcastController;
 
 Route::group([
     'prefix' => 'auth'
@@ -16,43 +12,50 @@ Route::group([
     Route::post('login', [AuthController::class, 'login']);
     Route::post('logout', [AuthController::class, 'logout']);
     Route::post('refresh', [AuthController::class, 'refresh']);
-    Route::get('me', [AuthController::class, 'me']);
 });
 
 
 // Task routes
 Route::prefix('tasks')->group(function () {
+    // View tasks - permission check handled in controller (complex logic: view_all OR view_assigned)
     Route::get('/', [TaskController::class, 'index']);
-    Route::post('/', [TaskController::class, 'store']);
+
+    // Create task - only managers
+    Route::post('/', [TaskController::class, 'store'])
+        ->middleware('permission:tasks,create');
+
     Route::get('/created', [TaskController::class, 'createdTasks']);
+    Route::get('/{id}', [TaskController::class, 'show']);
+
+    // Update task - permission check handled in controller (complex logic: update OR update_status)
     Route::put('/{id}', [TaskController::class, 'update']);
+
     Route::delete('/{id}', [TaskController::class, 'destroy']);
-    Route::put('/{id}/assign', [TaskController::class, 'reassign']);
+
+    // Reassign task - only managers
+    Route::put('/{id}/assign', [TaskController::class, 'reassign'])
+        ->middleware('permission:tasks,assign');
+
     Route::put('/{id}/complete', [TaskController::class, 'toggleComplete']);
+});
 
+// User routes
+Route::prefix('users')->group(function () {
+    // Get current user (authenticated users)
+    Route::get('/me', [UserController::class, 'me']);
 
-    // ==================== HR Integration ====================
-    Route::prefix('hr')->group(function () {
-        Route::post('/onboarding-checklist', [HRTaskController::class, 'createOnboardingChecklist']);
-        Route::get('/onboarding-progress/{employeeId}', [HRTaskController::class, 'getOnboardingProgress']);
-        Route::get('/department-summary/{departmentId}', [HRTaskController::class, 'getDepartmentTasksSummary']);
-        Route::post('/performance-review', [HRTaskController::class, 'createPerformanceReviewTask']);
-    });
+    // Get roles (for forms)
+    Route::get('/roles', [UserController::class, 'roles']);
 
-    // ==================== LMS Integration ====================
-    Route::prefix('lms')->group(function () {
-        Route::post('/assignment', [LMSTaskController::class, 'createCourseAssignment']);
-        Route::post('/quiz', [LMSTaskController::class, 'createQuizTask']);
-        Route::post('/tasks/{task}/quiz-completion', [LMSTaskController::class, 'recordQuizCompletion']);
-        Route::get('/course/{courseId}', [LMSTaskController::class, 'getCourseProgress']);
-        Route::get('/learner/{learnerId}', [LMSTaskController::class, 'getLearnerTranscript']);
-    });
-
-    // ==================== ERP Integration ====================
-    Route::prefix('erp')->group(function () {
-        Route::post('/procurement', [ERPTaskController::class, 'createProcurementTask']);
-        Route::post('/inventory', [ERPTaskController::class, 'createInventoryTask']);
-        Route::get('/procurement-pipeline', [ERPTaskController::class, 'getProcurementPipeline']);
-        Route::get('/inventory/{inventoryId}', [ERPTaskController::class, 'getInventoryStockStatus']);
-    });
+    // User management (only managers)
+    Route::get('/', [UserController::class, 'index'])
+        ->middleware('permission:users,view_all');
+    Route::get('/{id}', [UserController::class, 'show'])
+        ->middleware('permission:users,view_all');
+    Route::post('/', [UserController::class, 'store'])
+        ->middleware('permission:users,create');
+    Route::put('/{id}', [UserController::class, 'update'])
+        ->middleware('permission:users,update');
+    Route::delete('/{id}', [UserController::class, 'destroy'])
+        ->middleware('permission:users,delete');
 });

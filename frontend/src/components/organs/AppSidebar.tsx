@@ -12,8 +12,18 @@ import {
     SidebarHeader,
     SidebarMenu,
 } from "@/components/atoms/sidebar"
-import { ClipboardListIcon, InfoIcon, ListTodoIcon, SearchIcon, Settings2Icon } from "lucide-react"
+import { ClipboardListIcon, InfoIcon, ListTodoIcon, SearchIcon, Settings2Icon, UsersIcon, LayoutGridIcon } from "lucide-react"
+import type { LucideIcon } from "lucide-react"
 import { useMeQuery } from "@/services/authApi"
+import type { User } from "@/lib/types/auth.interface"
+
+interface NavItem {
+    title: string;
+    url: string;
+    icon: LucideIcon;
+    key: string;
+    requiredPermission?: string; // Optional permission required to show this item
+}
 
 export const defaultData = {
 
@@ -25,10 +35,24 @@ export const defaultData = {
             key: "my-tasks",
         },
         {
+            title: "Kanban Board",
+            url: "/dashboard/tasks-kanban",
+            icon: LayoutGridIcon,
+            key: "tasks-kanban",
+        },
+        {
             title: "created tasks",
             url: "/dashboard/created-tasks",
             icon: ListTodoIcon,
             key: "created-tasks",
+            requiredPermission: "tasks.create", // Only show if user has this permission
+        },
+        {
+            title: "Users",
+            url: "/dashboard/users",
+            icon: UsersIcon,
+            key: "users",
+            requiredPermission: "users.view_all", // Only show if user has this permission
         },
 
     ],
@@ -56,16 +80,34 @@ export const defaultData = {
 
 interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
     data?: {
-        navMain?: any[];
+        navMain?: NavItem[];
         documents?: any[];
         navSecondary?: any[];
         user?: any;
     };
 }
 
+// Helper function to check if user has a specific permission
+function hasPermission(user: User | undefined, permission: string): boolean {
+    if (!user?.role?.permissions) return false;
+
+    const [subject, action] = permission.split('.');
+    return user.role.permissions.some(
+        (p) => p.subject === subject && p.action === action
+    );
+}
+
 export function AppSidebar({ data = defaultData, ...props }: AppSidebarProps) {
 
     const { data: user } = useMeQuery()
+
+    // Filter navMain items based on permissions
+    const filteredNavMain = data.navMain?.filter((item) => {
+        if (item.requiredPermission && user) {
+            return hasPermission(user, item.requiredPermission);
+        }
+        return true; // Show item if no permission required
+    });
 
     return (
         <Sidebar collapsible="offcanvas" {...props}>
@@ -76,7 +118,7 @@ export function AppSidebar({ data = defaultData, ...props }: AppSidebarProps) {
                 </SidebarMenu>
             </SidebarHeader>
             <SidebarContent>
-                {data.navMain && <NavMain items={data.navMain} />}
+                {filteredNavMain && <NavMain items={filteredNavMain} />}
                 {data.documents && <NavDocuments items={data.documents} />}
                 {data.navSecondary && <NavSecondary items={data.navSecondary} className="mt-auto" />}
             </SidebarContent>

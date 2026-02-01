@@ -14,11 +14,31 @@ class Task  extends Model
 {
     use HasFactory, HRTaskTrait, LMSTaskTrait, ERPTaskTrait;
 
-    protected $fillable = ["creator_id", "assignee_id", "title", "description", "due_date", "priority", "is_completed", "entity_type", "entity_url", "meta"];
+    protected $fillable = [
+        "creator_id",
+        "assignee_id",
+        "title",
+        "description",
+        "due_date",
+        "priority",
+        "status",
+        "entity_type",
+        "entity_url",
+        "meta"
+    ];
     protected $casts = [
         'due_date' => 'datetime',
         'meta' => 'json',
     ];
+
+    /**
+     * Get is_completed attribute based on status
+     * For backward compatibility with existing code
+     */
+    public function getIsCompletedAttribute(): bool
+    {
+        return $this->getAttribute('status') === 'done';
+    }
     public function creator()
     {
         return $this->belongsTo(User::class, "creator_id");
@@ -28,14 +48,67 @@ class Task  extends Model
         return $this->belongsTo(User::class, "assignee_id");
     }
 
-    public function getStatusAttribute(): string
+    /**
+     * Tasks that THIS task depends on (must be completed before this task)
+     * "What do I need to wait for?"
+     */
+    public function dependencies()
     {
-        if ($this->is_completed) {
+        return $this->belongsToMany(
+            Task::class,
+            'task_dependencies',    // pivot table
+            'task_id',              // foreign key of THIS model on pivot
+            'depends_on_task_id'    // foreign key of RELATED model on pivot
+        );
+    }
+
+    /**
+     * Tasks that depend ON this task (blocked until this task is done)
+     * "What is waiting for me?"
+     */
+    public function dependents()
+    {
+        return $this->belongsToMany(
+            Task::class,
+            'task_dependencies',    // pivot table
+            'depends_on_task_id',   // foreign key of THIS model on pivot
+            'task_id'               // foreign key of RELATED model on pivot
+        );
+    }
+    public function addDependency(Task $task)
+    {
+        if (!$this->dependencies()->where('depends_on_task_id', $task->getKey())->exists()) {
+            $this->dependencies()->attach($task);
+        }
+        return $this;
+    }
+    public function removeDependency(Task $task)
+    {
+        if ($this->dependencies()->where('depends_on_task_id', $task->getKey())->exists()) {
+            $this->dependencies()->detach($task);
+        }
+        return $this;
+    }
+    public function addDependent(Task $task)
+    {
+        if (!$this->dependents()->where('task_id', $task->getKey())->exists()) {
+            $this->dependents()->attach($task);
+        }
+        return $this;
+    }
+    /**
+     * Get the task status (computed from status field and due date)
+     * This is kept for backward compatibility with frontend status computation
+     */
+    public function getTaskStatusAttribute(): string
+    {
+        // If status is 'done', return 'done'
+        if ($this->getAttribute('status') === 'done') {
             return 'done';
         }
 
         $today = Carbon::today();
-        $dueDate = Carbon::parse($this->due_date);
+        $dueDate = Carbon::parse($this->getAttribute('due_date'));
 
         if ($dueDate->isPast()) {
             return 'missed';
@@ -58,37 +131,14 @@ class Task  extends Model
         $today = Carbon::today();
 
         return match ($status) {
-            'done' => $query->where('is_completed', true),
-            'missed' => $query->where('is_completed', false)
+            'done' => $query->where('status', 'done'),
+            'missed' => $query->where('status', '!=', 'done')
                 ->where('due_date', '<', $today),
-            'due_today' => $query->where('is_completed', false)
+            'due_today' => $query->where('status', '!=', 'done')
                 ->whereDate('due_date', $today),
-            'upcoming' => $query->where('is_completed', false)
+            'upcoming' => $query->where('status', '!=', 'done')
                 ->where('due_date', '>', $today),
             default => $query
-        };
-    }
-
-    // ==================== System Context ====================
-    public function getSystemContext()
-    {
-        if (isset($this->meta['hr_context'])) return 'hr';
-        if (isset($this->meta['crm_context'])) return 'crm';
-        if (isset($this->meta['lms_context'])) return 'lms';
-        if (isset($this->meta['erp_context'])) return 'erp';
-        return null;
-    }
-
-    public function getSystemType()
-    {
-        $context = $this->getSystemContext();
-
-        return match ($context) {
-            'hr' => $this->meta['hr_type'] ?? null,
-            'crm' => $this->meta['crm_type'] ?? null,
-            'lms' => $this->meta['lms_type'] ?? null,
-            'erp' => $this->meta['erp_type'] ?? null,
-            default => null,
         };
     }
 }

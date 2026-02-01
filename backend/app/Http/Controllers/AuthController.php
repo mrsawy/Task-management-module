@@ -64,11 +64,6 @@ class AuthController extends BaseController
         return $this->respondWithToken($token);
     }
 
-    public function me(): JsonResponse
-    {
-        return response()->json($this->guard()->user());
-    }
-
     public function logout(): JsonResponse
     {
         $this->guard()->logout();
@@ -83,11 +78,19 @@ class AuthController extends BaseController
 
     protected function respondWithToken(string $token): JsonResponse
     {
+        /** @var User|null $user */
+        $user = $this->guard()->user();
+
+        // Eager load role with permissions
+        if ($user) {
+            $user->load('role.permissions');
+        }
+
         return response()->json([
             'access_token' => $token,
             'token_type' => 'bearer',
             'expires_in' => $this->guard()->factory()->getTTL() * 60,
-            'user' => $this->guard()->user()
+            'user' => $user
         ]);
     }
 }

@@ -4,12 +4,43 @@ import type { Task } from '../types/task.interface';
 import { isDateToday, isDatePast } from './dateUtils';
 
 export type TaskStatus = 'done' | 'missed' | 'due_today' | 'upcoming';
+export type TaskWorkflowStatus = 'to-do' | 'in-progress' | 'review' | 'done';
 
 export const getTaskStatus = (task: Task): TaskStatus => {
-  if (task.is_completed) return 'done';
+  if (task.status === 'done') return 'done';
   if (isDatePast(task.due_date)) return 'missed';
   if (isDateToday(task.due_date)) return 'due_today';
   return 'upcoming';
+};
+
+export const getWorkflowStatusColor = (status: TaskWorkflowStatus) => {
+  switch (status) {
+    case 'to-do':
+      return 'text-gray-600 bg-gray-50 border-gray-200';
+    case 'in-progress':
+      return 'text-blue-600 bg-blue-50 border-blue-200';
+    case 'review':
+      return 'text-yellow-600 bg-yellow-50 border-yellow-200';
+    case 'done':
+      return 'text-green-600 bg-green-50 border-green-200';
+    default:
+      return 'text-muted-foreground bg-muted border-border';
+  }
+};
+
+export const getWorkflowStatusLabel = (status: TaskWorkflowStatus) => {
+  switch (status) {
+    case 'to-do':
+      return 'To Do';
+    case 'in-progress':
+      return 'In Progress';
+    case 'review':
+      return 'Review';
+    case 'done':
+      return 'Done';
+    default:
+      return 'Unknown';
+  }
 };
 
 export const getStatusColor = (status: TaskStatus) => {

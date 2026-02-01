@@ -24,6 +24,10 @@ export const taskApi = createApi({
             query: () => '/',
             providesTags: ['Task'],
         }),
+        getTask: builder.query<{ data: Task, success: boolean }, number>({
+            query: (id) => `/${id}`,
+            providesTags: (result, error, id) => [{ type: 'Task', id }],
+        }),
         getCreatedTasks: builder.query<{ data: Task[], success: boolean }, void>({
             query: () => '/created',
             providesTags: ['Task'],
@@ -36,12 +40,98 @@ export const taskApi = createApi({
             }),
             invalidatesTags: ['Task','User'],
         }),
-        updateTask: builder.mutation<Task, UpdateTaskRequest>({
+        updateTask: builder.mutation<{ data: Task, success: boolean }, UpdateTaskRequest>({
             query: ({ id, ...patch }) => ({
                 url: `/${id}`,
                 method: 'PUT',
                 body: patch,
             }),
+            async onQueryStarted({ id, ...patch }, { dispatch, queryFulfilled }) {
+                // Store previous state for rollback
+                let previousTask: Task | null = null;
+                let previousTaskIndex = -1;
+
+                // Optimistic update: update the cache immediately
+                const patchResult = dispatch(
+                    taskApi.util.updateQueryData('getTasks', undefined, (draft) => {
+                        if (draft?.data) {
+                            const taskIndex = draft.data.findIndex((task) => task.id === id);
+                            if (taskIndex !== -1) {
+                                // Store previous state for rollback
+                                previousTask = { ...draft.data[taskIndex] };
+                                previousTaskIndex = taskIndex;
+                                
+                                // Optimistically update the task
+                                draft.data[taskIndex] = {
+                                    ...draft.data[taskIndex],
+                                    ...patch,
+                                };
+                            }
+                        }
+                    })
+                );
+
+                // Also optimistically update getTask query if it exists
+                const patchResultSingle = dispatch(
+                    taskApi.util.updateQueryData('getTask', id, (draft) => {
+                        if (draft?.data) {
+                            previousTask = previousTask || { ...draft.data };
+                            draft.data = {
+                                ...draft.data,
+                                ...patch,
+                            };
+                        }
+                    })
+                );
+
+                try {
+                    // Wait for the query to fulfill
+                    const { data } = await queryFulfilled;
+                    
+                    // Update with server response (in case server returns different data)
+                    dispatch(
+                        taskApi.util.updateQueryData('getTasks', undefined, (draft) => {
+                            if (draft?.data) {
+                                const taskIndex = draft.data.findIndex((task) => task.id === id);
+                                if (taskIndex !== -1) {
+                                    draft.data[taskIndex] = data.data;
+                                }
+                            }
+                        })
+                    );
+                    
+                    // Also update getTask query with server response
+                    dispatch(
+                        taskApi.util.updateQueryData('getTask', id, (draft) => {
+                            if (draft?.data) {
+                                draft.data = data.data;
+                            }
+                        })
+                    );
+                } catch (error) {
+                    // Rollback on error
+                    if (previousTask && previousTaskIndex !== -1) {
+                        dispatch(
+                            taskApi.util.updateQueryData('getTasks', undefined, (draft) => {
+                                if (draft?.data && previousTaskIndex !== -1) {
+                                    draft.data[previousTaskIndex] = previousTask!;
+                                }
+                            })
+                        );
+                    }
+                    
+                    // Rollback single task query
+                    if (previousTask) {
+                        dispatch(
+                            taskApi.util.updateQueryData('getTask', id, (draft) => {
+                                if (draft?.data) {
+                                    draft.data = previousTask!;
+                                }
+                            })
+                        );
+                    }
+                }
+            },
             invalidatesTags: ['Task','User'],
         }),
         deleteTask: builder.mutation<void, number>({
@@ -71,6 +161,7 @@ export const taskApi = createApi({
 
 export const {
     useGetTasksQuery,
+    useGetTaskQuery,
     useGetCreatedTasksQuery,
     useCreateTaskMutation,
     useUpdateTaskMutation,
