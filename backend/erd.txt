@@ -1,0 +1,258 @@
+digraph "G" {
+style="filled"
+bgcolor="#F7F7F7"
+fontsize="12"
+labelloc="t"
+concentrate="1"
+splines="polyline"
+overlap=""
+nodesep="1"
+rankdir="LR"
+pad="0.5"
+ranksep="2"
+esep="1"
+fontname="Helvetica Neue"
+appmodelspermission:id -> role_permissions:permission_id [
+label=" "
+xlabel="BelongsToMany
+roles"
+color="#003049"
+penwidth="1.8"
+fontname="Helvetica Neue"
+]
+role_permissions:role_id -> appmodelsrole:id [
+label=" "
+xlabel="BelongsToMany
+roles"
+color="#003049"
+penwidth="1.8"
+fontname="Helvetica Neue"
+]
+appmodelsrole:id -> role_permissions:role_id [
+label=" "
+xlabel="BelongsToMany
+permissions"
+color="#003049"
+penwidth="1.8"
+fontname="Helvetica Neue"
+]
+role_permissions:permission_id -> appmodelspermission:id [
+label=" "
+xlabel="BelongsToMany
+permissions"
+color="#003049"
+penwidth="1.8"
+fontname="Helvetica Neue"
+]
+appmodelsrole:id -> appmodelsuser:role_id [
+label=" "
+xlabel="HasMany
+users"
+color="#FCBF49"
+penwidth="1.8"
+fontname="Helvetica Neue"
+dir="both"
+arrowhead="crow"
+arrowtail="none"
+]
+appmodelstask:creator_id -> appmodelsuser:id [
+label=" "
+xlabel="BelongsTo
+creator"
+color="#F77F00"
+penwidth="1.8"
+fontname="Helvetica Neue"
+dir="both"
+arrowhead="tee"
+arrowtail="crow"
+]
+appmodelstask:assignee_id -> appmodelsuser:id [
+label=" "
+xlabel="BelongsTo
+assignee"
+color="#F77F00"
+penwidth="1.8"
+fontname="Helvetica Neue"
+dir="both"
+arrowhead="tee"
+arrowtail="crow"
+]
+appmodelstask:id -> task_dependencies:task_id [
+label=" "
+xlabel="BelongsToMany
+dependencies"
+color="#003049"
+penwidth="1.8"
+fontname="Helvetica Neue"
+]
+task_dependencies:depends_on_task_id -> appmodelstask:id [
+label=" "
+xlabel="BelongsToMany
+dependencies"
+color="#003049"
+penwidth="1.8"
+fontname="Helvetica Neue"
+]
+appmodelstask:id -> task_dependencies:depends_on_task_id [
+label=" "
+xlabel="BelongsToMany
+dependents"
+color="#003049"
+penwidth="1.8"
+fontname="Helvetica Neue"
+]
+task_dependencies:task_id -> appmodelstask:id [
+label=" "
+xlabel="BelongsToMany
+dependents"
+color="#003049"
+penwidth="1.8"
+fontname="Helvetica Neue"
+]
+appmodelsuser:id -> appmodelstask:user_id [
+label=" "
+xlabel="HasMany
+tasks"
+color="#FCBF49"
+penwidth="1.8"
+fontname="Helvetica Neue"
+dir="both"
+arrowhead="crow"
+arrowtail="none"
+]
+appmodelsuser:role_id -> appmodelsrole:id [
+label=" "
+xlabel="BelongsTo
+role"
+color="#F77F00"
+penwidth="1.8"
+fontname="Helvetica Neue"
+dir="both"
+arrowhead="tee"
+arrowtail="crow"
+]
+appmodelsuser:created_by_id -> appmodelsuser:id [
+label=" "
+xlabel="BelongsTo
+creator"
+color="#F77F00"
+penwidth="1.8"
+fontname="Helvetica Neue"
+dir="both"
+arrowhead="tee"
+arrowtail="crow"
+]
+appmodelsuser:id -> appmodelsuser:created_by_id [
+label=" "
+xlabel="HasMany
+createdUsers"
+color="#FCBF49"
+penwidth="1.8"
+fontname="Helvetica Neue"
+dir="both"
+arrowhead="crow"
+arrowtail="none"
+]
+"appmodelspermission" [
+label=<<table width="100%" height="100%" border="0" margin="0" cellborder="1" cellspacing="0" cellpadding="10">
+<tr width="100%"><td width="100%" bgcolor="#d3d3d3"><font color="#333333">Permission</font></td></tr>
+<tr width="100%"><td port="id" align="left" width="100%"  bgcolor="#ffffff"><font color="#333333" >id (bigint)</font></td></tr>
+<tr width="100%"><td port="subject" align="left" width="100%"  bgcolor="#ffffff"><font color="#333333" >subject (varchar)</font></td></tr>
+<tr width="100%"><td port="action" align="left" width="100%"  bgcolor="#ffffff"><font color="#333333" >action (varchar)</font></td></tr>
+<tr width="100%"><td port="created_at" align="left" width="100%"  bgcolor="#ffffff"><font color="#333333" >created_at (timestamp)</font></td></tr>
+<tr width="100%"><td port="updated_at" align="left" width="100%"  bgcolor="#ffffff"><font color="#333333" >updated_at (timestamp)</font></td></tr>
+</table>>
+margin="0"
+shape="rectangle"
+fontname="Helvetica Neue"
+]
+"appmodelsrole" [
+label=<<table width="100%" height="100%" border="0" margin="0" cellborder="1" cellspacing="0" cellpadding="10">
+<tr width="100%"><td width="100%" bgcolor="#d3d3d3"><font color="#333333">Role</font></td></tr>
+<tr width="100%"><td port="id" align="left" width="100%"  bgcolor="#ffffff"><font color="#333333" >id (bigint)</font></td></tr>
+<tr width="100%"><td port="name" align="left" width="100%"  bgcolor="#ffffff"><font color="#333333" >name (varchar)</font></td></tr>
+<tr width="100%"><td port="created_at" align="left" width="100%"  bgcolor="#ffffff"><font color="#333333" >created_at (timestamp)</font></td></tr>
+<tr width="100%"><td port="updated_at" align="left" width="100%"  bgcolor="#ffffff"><font color="#333333" >updated_at (timestamp)</font></td></tr>
+</table>>
+margin="0"
+shape="rectangle"
+fontname="Helvetica Neue"
+]
+"appmodelstask" [
+label=<<table width="100%" height="100%" border="0" margin="0" cellborder="1" cellspacing="0" cellpadding="10">
+<tr width="100%"><td width="100%" bgcolor="#d3d3d3"><font color="#333333">Task</font></td></tr>
+<tr width="100%"><td port="id" align="left" width="100%"  bgcolor="#ffffff"><font color="#333333" >id (bigint)</font></td></tr>
+<tr width="100%"><td port="creator_id" align="left" width="100%"  bgcolor="#ffffff"><font color="#333333" >creator_id (bigint)</font></td></tr>
+<tr width="100%"><td port="assignee_id" align="left" width="100%"  bgcolor="#ffffff"><font color="#333333" >assignee_id (bigint)</font></td></tr>
+<tr width="100%"><td port="title" align="left" width="100%"  bgcolor="#ffffff"><font color="#333333" >title (varchar)</font></td></tr>
+<tr width="100%"><td port="description" align="left" width="100%"  bgcolor="#ffffff"><font color="#333333" >description (text)</font></td></tr>
+<tr width="100%"><td port="due_date" align="left" width="100%"  bgcolor="#ffffff"><font color="#333333" >due_date (datetime)</font></td></tr>
+<tr width="100%"><td port="priority" align="left" width="100%"  bgcolor="#ffffff"><font color="#333333" >priority (enum)</font></td></tr>
+<tr width="100%"><td port="status" align="left" width="100%"  bgcolor="#ffffff"><font color="#333333" >status (enum)</font></td></tr>
+<tr width="100%"><td port="entity_type" align="left" width="100%"  bgcolor="#ffffff"><font color="#333333" >entity_type (varchar)</font></td></tr>
+<tr width="100%"><td port="entity_url" align="left" width="100%"  bgcolor="#ffffff"><font color="#333333" >entity_url (bigint)</font></td></tr>
+<tr width="100%"><td port="meta" align="left" width="100%"  bgcolor="#ffffff"><font color="#333333" >meta (json)</font></td></tr>
+<tr width="100%"><td port="created_at" align="left" width="100%"  bgcolor="#ffffff"><font color="#333333" >created_at (timestamp)</font></td></tr>
+<tr width="100%"><td port="updated_at" align="left" width="100%"  bgcolor="#ffffff"><font color="#333333" >updated_at (timestamp)</font></td></tr>
+</table>>
+margin="0"
+shape="rectangle"
+fontname="Helvetica Neue"
+]
+"appmodelstaskdependency" [
+label=<<table width="100%" height="100%" border="0" margin="0" cellborder="1" cellspacing="0" cellpadding="10">
+<tr width="100%"><td width="100%" bgcolor="#d3d3d3"><font color="#333333">TaskDependency</font></td></tr>
+<tr width="100%"><td port="id" align="left" width="100%"  bgcolor="#ffffff"><font color="#333333" >id (bigint)</font></td></tr>
+<tr width="100%"><td port="created_at" align="left" width="100%"  bgcolor="#ffffff"><font color="#333333" >created_at (timestamp)</font></td></tr>
+<tr width="100%"><td port="updated_at" align="left" width="100%"  bgcolor="#ffffff"><font color="#333333" >updated_at (timestamp)</font></td></tr>
+<tr width="100%"><td port="task_id" align="left" width="100%"  bgcolor="#ffffff"><font color="#333333" >task_id (bigint)</font></td></tr>
+<tr width="100%"><td port="depends_on_task_id" align="left" width="100%"  bgcolor="#ffffff"><font color="#333333" >depends_on_task_id (bigint)</font></td></tr>
+</table>>
+margin="0"
+shape="rectangle"
+fontname="Helvetica Neue"
+]
+"appmodelsuser" [
+label=<<table width="100%" height="100%" border="0" margin="0" cellborder="1" cellspacing="0" cellpadding="10">
+<tr width="100%"><td width="100%" bgcolor="#d3d3d3"><font color="#333333">User</font></td></tr>
+<tr width="100%"><td port="id" align="left" width="100%"  bgcolor="#ffffff"><font color="#333333" >id (bigint)</font></td></tr>
+<tr width="100%"><td port="role_id" align="left" width="100%"  bgcolor="#ffffff"><font color="#333333" >role_id (bigint)</font></td></tr>
+<tr width="100%"><td port="created_by_id" align="left" width="100%"  bgcolor="#ffffff"><font color="#333333" >created_by_id (bigint)</font></td></tr>
+<tr width="100%"><td port="name" align="left" width="100%"  bgcolor="#ffffff"><font color="#333333" >name (varchar)</font></td></tr>
+<tr width="100%"><td port="email" align="left" width="100%"  bgcolor="#ffffff"><font color="#333333" >email (varchar)</font></td></tr>
+<tr width="100%"><td port="email_verified_at" align="left" width="100%"  bgcolor="#ffffff"><font color="#333333" >email_verified_at (timestamp)</font></td></tr>
+<tr width="100%"><td port="password" align="left" width="100%"  bgcolor="#ffffff"><font color="#333333" >password (varchar)</font></td></tr>
+<tr width="100%"><td port="created_at" align="left" width="100%"  bgcolor="#ffffff"><font color="#333333" >created_at (timestamp)</font></td></tr>
+<tr width="100%"><td port="updated_at" align="left" width="100%"  bgcolor="#ffffff"><font color="#333333" >updated_at (timestamp)</font></td></tr>
+</table>>
+margin="0"
+shape="rectangle"
+fontname="Helvetica Neue"
+]
+"role_permissions" [
+label=<<table width="100%" height="100%" border="0" margin="0" cellborder="1" cellspacing="0" cellpadding="10">
+<tr width="100%"><td width="100%" bgcolor="#d3d3d3"><font color="#333333">Pivot</font></td></tr>
+<tr width="100%"><td port="id" align="left" width="100%"  bgcolor="#ffffff"><font color="#333333" >id (bigint)</font></td></tr>
+<tr width="100%"><td port="role_id" align="left" width="100%"  bgcolor="#ffffff"><font color="#333333" >role_id (bigint)</font></td></tr>
+<tr width="100%"><td port="permission_id" align="left" width="100%"  bgcolor="#ffffff"><font color="#333333" >permission_id (bigint)</font></td></tr>
+<tr width="100%"><td port="created_at" align="left" width="100%"  bgcolor="#ffffff"><font color="#333333" >created_at (timestamp)</font></td></tr>
+<tr width="100%"><td port="updated_at" align="left" width="100%"  bgcolor="#ffffff"><font color="#333333" >updated_at (timestamp)</font></td></tr>
+</table>>
+margin="0"
+shape="rectangle"
+fontname="Helvetica Neue"
+]
+"task_dependencies" [
+label=<<table width="100%" height="100%" border="0" margin="0" cellborder="1" cellspacing="0" cellpadding="10">
+<tr width="100%"><td width="100%" bgcolor="#d3d3d3"><font color="#333333">Pivot</font></td></tr>
+<tr width="100%"><td port="id" align="left" width="100%"  bgcolor="#ffffff"><font color="#333333" >id (bigint)</font></td></tr>
+<tr width="100%"><td port="created_at" align="left" width="100%"  bgcolor="#ffffff"><font color="#333333" >created_at (timestamp)</font></td></tr>
+<tr width="100%"><td port="updated_at" align="left" width="100%"  bgcolor="#ffffff"><font color="#333333" >updated_at (timestamp)</font></td></tr>
+<tr width="100%"><td port="task_id" align="left" width="100%"  bgcolor="#ffffff"><font color="#333333" >task_id (bigint)</font></td></tr>
+<tr width="100%"><td port="depends_on_task_id" align="left" width="100%"  bgcolor="#ffffff"><font color="#333333" >depends_on_task_id (bigint)</font></td></tr>
+</table>>
+margin="0"
+shape="rectangle"
+fontname="Helvetica Neue"
+]
+}
