@@ -2,9 +2,54 @@
 
 A full-stack task management system built with Laravel and React, featuring real-time notifications via Laravel Reverb WebSockets.
 
-## 🌐 Live Demo
+## 📊 Database Schema (ERD)
 
-**[https://task-management-module.hadefah.com/](https://task-management-module.hadefah.com/)**
+The application uses a relational database with the following main entities and relationships:
+
+### Entity Relationship Diagram
+
+![Database ERD](https://drive.google.com/uc?export=view&id=1TBBYTaPEujlj0n86o2iiP7ecejCqK_xd)
+*Entity Relationship Diagram showing the database structure and relationships*
+
+[View Full Size](https://drive.google.com/file/d/1TBBYTaPEujlj0n86o2iiP7ecejCqK_xd/view?usp=sharing)
+
+### Main Entities
+- **Users**: System users with authentication and role assignment
+- **Roles**: User roles (Manager, Worker)
+- **Permissions**: Granular permissions for tasks and users
+- **Tasks**: Task items with workflow status, priority, and dependencies
+- **Task Dependencies**: Many-to-many relationship for task dependencies
+
+### Relationships
+- **User ↔ Role**: Many-to-One (Users belong to a Role)
+- **Role ↔ Permission**: Many-to-Many (Roles have multiple Permissions via `role_permissions` pivot table)
+- **User ↔ Task**: One-to-Many (Users can create/be assigned multiple Tasks)
+- **Task ↔ Task**: Many-to-Many (Tasks can depend on other Tasks via `task_dependencies` pivot table)
+- **User ↔ User**: Self-referential (Users can create other Users via `created_by_id`)
+
+### Generate ERD
+
+The project includes the [Laravel ER Diagram Generator](https://github.com/beyondcode/laravel-er-diagram-generator) package for visualizing the database schema.
+
+#### Generate Text ERD:
+```bash
+cd backend
+php artisan generate:erd --text-output erd.txt
+```
+
+#### Generate Visual ERD (requires GraphViz):
+1. Install GraphViz:
+   - **Windows**: Download from [GraphViz website](https://graphviz.org/download/) or use `winget install Graphviz.Graphviz`
+   - **macOS**: `brew install graphviz`
+   - **Linux**: `sudo apt-get install graphviz` or `sudo yum install graphviz`
+
+2. Generate the diagram:
+```bash
+cd backend
+php artisan generate:erd erd.png --format=png
+```
+
+> **Note**: A text-based ERD (`erd.txt`) in GraphViz DOT format is already generated in the `backend/` directory. You can convert it to an image using online tools like [Graphviz Online](https://dreampuf.github.io/GraphvizOnline/) or by installing GraphViz locally.
 
 ## 📸 Screenshots
 
@@ -198,55 +243,6 @@ The backend follows a **modular architecture** designed for scalability and main
 - **Queue Jobs**: Asynchronous processing for notifications
 - **MySQL**: Primary database
 
-## 📊 Database Schema (ERD)
-
-The application uses a relational database with the following main entities and relationships:
-
-### Entity Relationship Diagram
-
-![Database ERD](https://drive.google.com/uc?export=view&id=1TBBYTaPEujlj0n86o2iiP7ecejCqK_xd)
-*Entity Relationship Diagram showing the database structure and relationships*
-
-[View Full Size](https://drive.google.com/file/d/1TBBYTaPEujlj0n86o2iiP7ecejCqK_xd/view?usp=sharing)
-
-### Main Entities
-- **Users**: System users with authentication and role assignment
-- **Roles**: User roles (Manager, Worker)
-- **Permissions**: Granular permissions for tasks and users
-- **Tasks**: Task items with workflow status, priority, and dependencies
-- **Task Dependencies**: Many-to-many relationship for task dependencies
-
-### Relationships
-- **User ↔ Role**: Many-to-One (Users belong to a Role)
-- **Role ↔ Permission**: Many-to-Many (Roles have multiple Permissions via `role_permissions` pivot table)
-- **User ↔ Task**: One-to-Many (Users can create/be assigned multiple Tasks)
-- **Task ↔ Task**: Many-to-Many (Tasks can depend on other Tasks via `task_dependencies` pivot table)
-- **User ↔ User**: Self-referential (Users can create other Users via `created_by_id`)
-
-### Generate ERD
-
-The project includes the [Laravel ER Diagram Generator](https://github.com/beyondcode/laravel-er-diagram-generator) package for visualizing the database schema.
-
-#### Generate Text ERD:
-```bash
-cd backend
-php artisan generate:erd --text-output erd.txt
-```
-
-#### Generate Visual ERD (requires GraphViz):
-1. Install GraphViz:
-   - **Windows**: Download from [GraphViz website](https://graphviz.org/download/) or use `winget install Graphviz.Graphviz`
-   - **macOS**: `brew install graphviz`
-   - **Linux**: `sudo apt-get install graphviz` or `sudo yum install graphviz`
-
-2. Generate the diagram:
-```bash
-cd backend
-php artisan generate:erd erd.png --format=png
-```
-
-> **Note**: A text-based ERD (`erd.txt`) in GraphViz DOT format is already generated in the `backend/` directory. You can convert it to an image using online tools like [Graphviz Online](https://dreampuf.github.io/GraphvizOnline/) or by installing GraphViz locally.
-
 ## 🎨 Frontend Stack
 
 - **React**: UI library
@@ -398,7 +394,6 @@ This project is open-source and available under the MIT License.
 
 ## 🔗 Links
 
-- **Live Application**: [https://task-management-module.hadefah.com/](https://task-management-module.hadefah.com/)
 - **Backend**: Laravel-based REST API
 - **Frontend**: React with Vite
 
